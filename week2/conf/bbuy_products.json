@@ -8,6 +8,10 @@
             "smarter_hyphens_filter",
             "lowercase"
           ]
+        },
+        "synonym": {
+          "tokenizer": "whitespace",
+          "filter": [ "stemmer", "synonym_filter" ]
         }
       },
       "tokenizer": {
@@ -24,6 +28,10 @@
           "type": "word_delimiter_graph",
           "catenate_words": true,
           "catenate_all": true
+        },
+        "synonym_filter": {
+          "type": "synonym",
+          "synonyms_path": "synonyms.csv"
         }
       }
     }
@@ -250,6 +258,27 @@
             "type": "completion"
           }
 
+        }
+      },
+      "name.synonyms": {
+        "type": "text",
+        "analyzer": "english",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 2048
+          },
+          "hyphens": {
+            "type": "text",
+            "analyzer": "smarter_hyphens"
+          },
+          "suggest": {
+            "type": "completion"
+          },
+          "synonyms": {
+            "type": "text",
+            "analyzer": "synonym"
+          }
         }
       },
       "onSale": {

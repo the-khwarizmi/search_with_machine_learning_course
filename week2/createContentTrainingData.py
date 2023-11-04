@@ -5,6 +5,7 @@ from tqdm import tqdm
 import os
 import xml.etree.ElementTree as ET
 from pathlib import Path
+from collections import Counter
 
 def transform_name(product_name):
     # IMPLEMENT
@@ -62,8 +63,29 @@ if __name__ == '__main__':
     files = glob.glob(f'{directory}/*.xml')
     print("Writing results to %s" % output_file)
     with multiprocessing.Pool() as p:
-        all_labels = tqdm(p.imap(_label_filename, files), total=len(files))
-        with open(output_file, 'w') as output:
-            for label_list in all_labels:
-                for (cat, name) in label_list:
-                    output.write(f'__label__{cat} {name}\n')
+        all_labels = list(tqdm(p.imap(_label_filename, files), total=len(files)))
+        # with open(output_file, 'w') as output:
+        #     for label_list in all_labels:
+        #         for (cat, name) in label_list:
+        #             output.write(f'__label__{cat} {name}\n')
+
+        # Count occurrences of each 'cat'
+        label_counts = Counter(cat for label_list in all_labels for cat, _ in label_list)
+
+        # Print the label counts for debugging
+        # print("Label Counts:", label_counts)
+
+        # Accumulate lines to write
+        lines_to_write = []
+        for label_list in all_labels:
+            for cat, name in label_list:
+                if label_counts[cat] >= min_products:
+                    lines_to_write.append(f'__label__{cat} {name}\n')
+
+        # Print the number of lines to write for debugging
+        print("Number of lines to write:", len(lines_to_write))
+
+        # Write to output file
+        if lines_to_write:
+            with open(output_file, 'w') as output:
+                output.writelines(lines_to_write)
